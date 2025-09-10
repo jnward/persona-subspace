@@ -35,8 +35,8 @@ logging.getLogger("openai._base_client").setLevel(logging.WARNING)
 
 # Default constants
 DEFAULT_INSTRUCTIONS_DIR = Path(__file__).parent / "data" / "instructions"
-DEFAULT_RESPONSES_DIR = Path("/workspace/roles_240/responses")
-DEFAULT_OUTPUT_DIR = Path("/workspace/roles_240/extract_labels")
+DEFAULT_RESPONSES_DIR = Path("/workspace/persona-subspace/roles/responses_12b")
+DEFAULT_OUTPUT_DIR = Path("/workspace/persona-subspace/roles/extract_labels_12b")
 DEFAULT_JUDGE_MODEL = "gpt-4.1-mini"
 
 
@@ -344,8 +344,9 @@ async def call_judge_model_single(
         response = await client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=max_tokens,
-            temperature=0.0  # For consistent evaluation
+            # max_tokens=max_tokens,
+            # temperature=0.0  # For consistent evaluation
+            max_completion_tokens=max_tokens,
         )
         
         if response.choices and response.choices[0].message.content:

@@ -84,8 +84,16 @@ def extract_batched_activations(model, tokenizer, conversations, layers=None, ba
     Returns:
         List of activation tensors, one per conversation
     """
+    # Determine the correct path to layers based on model architecture
+    if model_name and 'gemma-3' in model_name.lower():
+        # Gemma-3 is multimodal and has layers under language_model
+        model_layers = model.model.language_model.layers
+    else:
+        # Default path for Gemma-2, Llama, Qwen, etc.
+        model_layers = model.model.layers
+    
     if layers is None:
-        layers = list(range(len(model.model.layers)))
+        layers = list(range(len(model_layers)))
     elif isinstance(layers, int):
         layers = [layers]
     
@@ -141,7 +149,7 @@ def extract_batched_activations(model, tokenizer, conversations, layers=None, ba
             
             # Register hooks for target layers
             for layer_idx in layers:
-                target_layer = model.model.layers[layer_idx]
+                target_layer = model_layers[layer_idx]
                 handle = target_layer.register_forward_hook(create_hook_fn(layer_idx))
                 handles.append(handle)
             
@@ -597,7 +605,7 @@ def process_roles_on_gpu_optimized(gpu_id, role_names, args, prompt_indices=None
     """Process a subset of roles on a specific GPU using optimized extraction."""
     # Set the GPU for this process
     torch.cuda.set_device(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
+    # Removed CUDA_VISIBLE_DEVICES setting to fix multi-GPU indexing issue
     
     # Set up logging for this process
     logger = logging.getLogger(f"GPU-{gpu_id}")

@@ -56,8 +56,8 @@ class RoleResponseGenerator:
     def __init__(
         self,
         model_name: str = "google/gemma-2-27b-it",
-        roles_dir: str = "/root/git/persona-subspace/roles/data/instructions",
-        output_dir: str = "/workspace/roles/responses",
+        roles_dir: str = "/workspace/persona-subspace/roles/data/instructions",
+        output_dir: str = "/workspace/persona-subspace/roles/responses",
         max_model_len: int = 1024,
         tensor_parallel_size: Optional[int] = None,
         gpu_memory_utilization: float = 0.9,
@@ -819,10 +819,10 @@ Examples:
     # Model configuration
     parser.add_argument('--model-name', type=str, default='google/gemma-2-27b-it',
                        help='HuggingFace model name (default: google/gemma-2-27b-it)')
-    parser.add_argument('--roles-dir', type=str, default='/root/git/persona-subspace/roles/data/instructions',
+    parser.add_argument('--roles-dir', type=str, default='/workspace/persona-subspace/roles/data/instructions',
                        help='Directory containing role JSON files')
-    parser.add_argument('--output-dir', type=str, default='/workspace/roles/responses',
-                       help='Output directory for JSONL files (default: /workspace/roles/responses)')
+    parser.add_argument('--output-dir', type=str, default='/workspace/persona-subspace/roles/responses',
+                       help='Output directory for JSONL files (default: /workspace/persona-subspace/roles/responses)')
     parser.add_argument('--max-model-len', type=int, default=1024,
                        help='Maximum model context length (default: 1024)')
     parser.add_argument('--tensor-parallel-size', type=int, default=None,

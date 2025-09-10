@@ -27,7 +27,9 @@ def load_data(role: str, activations_base_path: str, scores_base_path: str) -> T
     scores_path = f"{scores_base_path}/{role}.json"
     
     try:
-        activations = torch.load(activations_path, map_location='cpu')
+        # Load to GPU if available, otherwise CPU
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        activations = torch.load(activations_path, map_location=device)
         with open(scores_path, 'r') as f:
             scores = json.load(f)
         return activations, scores
@@ -80,7 +82,12 @@ def compute_vectors(
     # Compute mean vectors for groups that meet threshold
     def compute_mean_activation(activation_list: List[torch.Tensor]) -> torch.Tensor:
         if not activation_list:
-            return torch.zeros(46, 4608)
+            # Get the shape from the first activation if available
+            sample_activation = next(iter(activations.values()))
+            return torch.zeros_like(sample_activation)
+        
+        # Use torch.stack().mean() which is actually optimized
+        # PyTorch handles the memory efficiently internally
         return torch.stack(activation_list).mean(dim=0)
     
     # Build result dictionary
@@ -116,9 +123,12 @@ def process_role(role: str, min_count_threshold: int, activations_base_path: str
     
     vectors = compute_vectors(activations, scores, min_count_threshold)
     
+    # Move vectors to CPU before saving for compatibility
+    vectors_cpu = {k: v.cpu() for k, v in vectors.items()}
+    
     # Save vectors
     output_path = f"{output_base_path}/{role}.pt"
-    torch.save(vectors, output_path)
+    torch.save(vectors_cpu, output_path)
     
     return True
 
@@ -127,11 +137,11 @@ def main():
     parser = argparse.ArgumentParser(description="Generate role vectors from activations and scores")
     parser.add_argument("--min_count_threshold", type=int, default=50,
                        help="Minimum number of activations needed to create a vector (default: 50)")
-    parser.add_argument("--activations_path", type=str, default="/workspace/roles/response_activations",
+    parser.add_argument("--activations_path", type=str, default="/workspace/persona-subspace/roles/activations_per_response",
                        help="Path to directory containing activation tensors (default: /workspace/roles/response_activations)")
-    parser.add_argument("--scores_path", type=str, default="/workspace/roles/extract_scores", 
+    parser.add_argument("--scores_path", type=str, default="/workspace/persona-subspace/roles/extract_labels", 
                        help="Path to directory containing score labels (default: /workspace/roles/extract_scores)")
-    parser.add_argument("--output_path", type=str, default="/workspace/roles/vectors",
+    parser.add_argument("--output_path", type=str, default="/workspace/persona-subspace/roles/vectors",
                        help="Path to directory for saving vectors (default: /workspace/roles/vectors)")
     parser.add_argument("--roles", nargs="+", 
                        help="Specific roles to process (default: all roles)")
