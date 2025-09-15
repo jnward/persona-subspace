@@ -1,8 +1,17 @@
 .env
+.venv
+*/.ipynb_checkpoints
+
 traits/data/activations
 traits/data/response_activations
 traits/data/extract_scores
 traits/data/vectors
 .cache/
+
+*.pt
+*.jsonl
+*.json
+*.html
+*.sh
 
 __pycache__/
